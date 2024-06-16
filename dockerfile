@@ -3,7 +3,6 @@ FROM arm64v8/ubuntu:24.04
 # By Ruhila
 LABEL maintainer="Ruhila"
 LABEL name="pySeamsDev"
-# Kanging parts from https://github.com/HaoZeke/docker_platoBuilder/blob/4bd67339c3c53eb10a929287ddef126ad2562c26/Dockerfile#L4
 
 # Suppress debconf errors [from https://github.com/phusion/baseimage-docker/issues/58]
 ENV DEBIAN_FRONTEND noninteractive
@@ -14,7 +13,7 @@ RUN echo exit 0 > /usr/sbin/policy-rc.d
 # Add a clean step to every run [from https://medium.com/unbabel-dev/the-need-for-speed-optimizing-dockerfiles-at-unbabel-70102f6d6745]
 # The clean step is from Phusion
 
-# Grab faster mirrors [from https://linuxconfig.org/how-to-select-the-fastest-apt-mirror-on-ubuntu-linux]
+# Grab faster mirrors [1]
 RUN apt-get update && apt-get install --yes wget; \
 wget http://ftp.au.debian.org/debian/pool/main/n/netselect/netselect_0.3.ds1-26_amd64.deb; \
 dpkg -i netselect_0.3.ds1-26_amd64.deb; \
@@ -28,6 +27,7 @@ RUN apt update && apt install -y python3-pip \
 # Essentials
 texinfo libtool m4 build-essential \
 gettext ccache git sudo pkgconf zsh \
+adduser \
 # User packages
 gh silversearcher-ag \
 # d-SEAMS deps
@@ -40,7 +40,9 @@ apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Add the minion user, update password to minion and add to sudo group
 ENV USER minion
-RUN useradd --create-home ${USER} && \
+RUN adduser --create-home ${USER} \
+# UIDs below 10000 are a security risk [2]
+--uid 10000 --system && \
  echo "${USER}:${USER}" chpasswd && \
  adduser ${USER} sudo
 
@@ -60,3 +62,8 @@ SHELL ["/bin/zsh", "-c"]
 
 # Setup dummy git config
 RUN git config --global user.name "${USER}" && git config --global user.email "${USER}@localhost"
+
+
+# References
+# [1] https://github.com/HaoZeke/docker_platoBuilder/blob/4bd67339c3c53eb10a929287ddef126ad2562c26/Dockerfile#L4
+# [2] https://github.com/hexops/dockerfile/blob/main/Dockerfile
