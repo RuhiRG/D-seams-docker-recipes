@@ -23,28 +23,44 @@ sed -i 's/http:\/\/us.archive.ubuntu.com\/ubuntu\//http:\/\/ubuntu.uberglobalmir
 
 # Get package names from here [5]
 # Read manpages and get "where is this from" here [6]
-RUN apt update && apt install -y python3-pip \
-# Essentials
-texinfo libtool m4 build-essential \
-gettext ccache git sudo pkgconf zsh \
-adduser \
+RUN apt-get update && apt-get install -y python3-pip
+RUN apt-get install -y texinfo 
+RUN apt-get install -y libtool 
+RUN apt-get install -y m4 
+RUN apt-get install -y build-essential 
+RUN apt-get install -y gettext
+RUN apt-get install -y ccache
+RUN apt-get install -y sudo 
+RUN apt-get install -y git 
+RUN apt-get install -y pkgconf 
+RUN apt-get install -y zsh 
 # User packages
-gh silversearcher-ag \
+RUN apt-get install -y gh 
+RUN apt-get install -y silversearcher-ag 
+RUN apt-get install -y vim
 # d-SEAMS deps
-meson cmake gfortran \
-libeigen3-dev libfmt-dev libyaml-cpp-dev \
-libboost-all-dev pybind11-dev; \
+RUN apt-get install -y meson 
+RUN apt-get install -y cmake 
+RUN apt-get install -y gfortran 
+RUN apt-get install -y libeigen3-dev 
+RUN apt-get install -y libfmt-dev 
+RUN apt-get install -y libyaml-cpp-dev 
+RUN apt-get install -y libboost-all-dev 
+RUN apt-get install -y pybind11-dev 
 # Cleanup to reduce image size
-apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  
+
+
+
 
 
 # Add the minion user, update password to minion and add to sudo group
+# UIDs below 10000 are a security risk [7]
 ENV USER minion
 RUN useradd --create-home ${USER} \
-# UIDs below 10000 are a security risk [7]
---uid 10000 --system && \
+--uid 10001 --system && \
  echo "${USER}:${USER}" chpasswd && \
- adduser ${USER} sudo
+ adduser ${USER} sudo 
 
 # Switch to the new user by default and make ~/ the working dir
 WORKDIR /home/${USER}/
